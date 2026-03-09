@@ -43,7 +43,7 @@ module.exports = defineConfig({
       options: {}
     }
   ],
-  modules: modules: [
+  modules: [
     {
       key: "event-bus-redis", // Added key
       resolve: "@medusajs/event-bus-redis",
