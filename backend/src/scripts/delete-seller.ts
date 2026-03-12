@@ -1,52 +1,41 @@
-import { Modules } from "@medusajs/framework/utils"
 import { Client } from "pg"
+import { loadEnv } from "@medusajs/framework/utils"
 
-export default async function run({ container }) {
-  const userModule = container.resolve(Modules.USER)
-  const authModule = container.resolve(Modules.AUTH)
+export default async function run() {
+  // Ensure the environment variables are forcefully loaded
+  loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
   const email = "sir.rob@holo.host"
-  console.log(`Starting deletion process for ${email}...`)
-
-  // 1. Delete the User Profile
-  const users = await userModule.listUsers({ email })
-  if (users.length > 0) {
-    await userModule.deleteUsers(users.map(u => u.id))
-    console.log(`✅ Deleted Medusa User profile.`)
-  }
-
-  // 2. Delete the Auth Identity
-  const identities = await authModule.listAuthIdentities()
-  const idsToDelete = identities
-    .filter(i => JSON.stringify(i).includes(email))
-    .map(i => i.id)
-
-  if (idsToDelete.length > 0) {
-    await authModule.deleteAuthIdentities(idsToDelete)
-    console.log(`✅ Deleted Auth Identity.`)
-  }
-
-  // 3. Delete MercurJS Custom Records via Direct Postgres Connection
-  console.log(`Connecting directly to the database for MercurJS cleanup...`)
+  console.log(`Cleaning up MercurJS records for ${email}...`)
+  
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false } // Required for cloud databases like Northflank
+    ssl: { rejectUnauthorized: false }
   })
   
   try {
     await client.connect()
+    console.log(`✅ Connected to database successfully.`)
     
-    await client.query(`DELETE FROM "seller" WHERE email = $1`, [email])
-    console.log(`✅ Deleted MercurJS Seller record.`)
+    // Search the database for the exact table names MercurJS is using
+    const tableQuery = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema='public' AND (table_name ILIKE '%seller%' OR table_name ILIKE '%request%');
+    `)
+    console.log("🔍 Found relevant tables:", tableQuery.rows.map(r => r.table_name).join(", "))
     
-    await client.query(`DELETE FROM "request" WHERE email = $1`, [email])
-    console.log(`✅ Deleted MercurJS Registration Request.`)
+    // Attempt the delete with explicit error logging
+    const sellerDel = await client.query(`DELETE FROM "seller" WHERE email = $1`, [email])
+    console.log(`✅ Deleted ${sellerDel.rowCount} record(s) from 'seller' table.`)
     
-  } catch (e) {
-    console.log(`⚠️ Note: SQL cleanup skipped or tables not found.`)
+    const reqDel = await client.query(`DELETE FROM "request" WHERE email = $1`, [email])
+    console.log(`✅ Deleted ${reqDel.rowCount} record(s) from 'request' table.`)
+    
+  } catch (e: any) {
+    // DO NOT swallow the error this time!
+    console.error(`🔴 SQL Error: ${e.message}`)
   } finally {
     await client.end()
   }
-
-  console.log("🎉 Deletion complete! You should be able to register again.")
 }
