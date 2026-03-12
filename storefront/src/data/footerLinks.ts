@@ -1,22 +1,36 @@
-const links = {
-  customerServices: [
-    { label: 'FAQs', path: '#' },
-    { label: 'Track Order', path: '#' },
-    { label: 'Returns', path: '#' },
-    { label: 'Delivery', path: '#' },
-    { label: 'Payment', path: '#' },
+type FooterLink = {
+  label: string
+  path: string
+  external?: boolean
+}
+
+type FooterLinks = {
+  support: FooterLink[]
+  ecosystem: FooterLink[]
+  connect: FooterLink[]
+}
+
+const footerLinks: FooterLinks = {
+  support: [
+    { label: "FAQs", path: "/" },
+    { label: "Documentation", path: "https://docs.mercurjs.com", external: true },
+    { label: "Track Order", path: "/" },
+    { label: "Returns", path: "/" },
+    { label: "Contact", path: "/" },
   ],
-  about: [
-    { label: 'About us', path: '#' },
-    { label: 'Blog', path: '#' },
-    { label: 'Privacy Policy', path: '#' },
-    { label: 'Terms & Conditions', path: '#' },
+  ecosystem: [
+    { label: "About Interflow", path: "/" },
+    { label: "Holochain", path: "https://holochain.org", external: true },
+    { label: "Holo Hosting", path: "https://holo.host", external: true },
+    { label: "Partners", path: "/" },
+    { label: "Blog", path: "/" },
   ],
   connect: [
-    { label: 'Facebook', path: 'https://facebook.com' },
-    { label: 'Instagram', path: 'https://instagram.com' },
-    { label: 'LinekdIn', path: 'https://linkedin.com' },
+    { label: "Discord", path: "https://discord.gg/holochain" },
+    { label: "GitHub", path: "https://github.com/holochain" },
+    { label: "Twitter / X", path: "https://x.com/holochain" },
+    { label: "LinkedIn", path: "https://linkedin.com" },
   ],
-};
+}
 
-export default links;
+export default footerLinks

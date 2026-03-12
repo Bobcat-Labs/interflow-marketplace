@@ -24,7 +24,7 @@ export default async function RootLayout({
             <LocalizedClientLink href="/" className="text-2xl font-bold">
               <Image
                 src="/Logo.svg"
-                width={126}
+                width={160}
                 height={40}
                 alt="interflow"
                 priority
