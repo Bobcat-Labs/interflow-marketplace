@@ -42,6 +42,12 @@ module.exports = defineConfig({
       resolve: '@mercurjs/requests',
       options: {}
     }
+    {
+      resolve: '@mercurjs/resend',
+      options: {
+        api_key: process.env.RESEND_API_KEY,
+        from_email: process.env.RESEND_FROM_EMAIL,
+    }
   ],
   modules: [
     {
